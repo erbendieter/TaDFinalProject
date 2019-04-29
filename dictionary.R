@@ -39,8 +39,8 @@ vocabulary$`Elections and Politics` <- unique(unlist(mydict_list[11]))[c(8,10,14
 vocabulary$Intervention <- unique(unlist(mydict_list[12]))[c(1,4,9,18,22)]
 vocabulary$`Infrastructure and Utilities` <- unique(unlist(mydict_list[13]))[c(3,4,5,6,8)]
 
-vocabulary
-
+all_vocab <- unlist(vocabulary,use.names = FALSE)
+write(all_vocab, file = "vocab.txt")
 
 noquote_list <- list()
 for (i in 1:13){
