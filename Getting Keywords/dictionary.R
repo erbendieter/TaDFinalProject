@@ -60,4 +60,39 @@ mydict <- dictionary(list(Water = mydict_list[[1]], SearchAndRescue  = mydict_li
 
 
 
+df <- read.csv(file="clean.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
+df$text <- as.character(df$text)
+dfcorpus <- corpus(df$text)
+topicdfm <- dfm(dfcorpus, dictionary = mydict)
+df$water <- as.numeric(topicdfm[,1])
+df$SearchAndRescue <- as.numeric(topicdfm[,2])
+df$InfraAndUtilities <- as.numeric(topicdfm[,3])
+df$ExtreViolenceTerro <- as.numeric(topicdfm[,4])
+df$Medical <- as.numeric(topicdfm[,5])
+df$VioCiviUnre <- as.numeric(topicdfm[,6])
+df$Evacuation <- as.numeric(topicdfm[,7])
+df$Energy <- as.numeric(topicdfm[,8])
+df$Shelter <- as.numeric(topicdfm[,9])
+df$Intervention <- as.numeric(topicdfm[,10])
+df$Food <- as.numeric(topicdfm[,11])
+df$Sanitation <- as.numeric(topicdfm[,12])
+df$ElecAndPolit <- as.numeric(topicdfm[,13])
+
+
+head(df)
+
+newdf <- df[c(6:18)]
+newdf$topic <- colnames(newdf)[apply(newdf,1,which.max)]
+
+positive_word <- read.csv("positivewords.txt",stringsAsFactors=F)
+negative_word <- read.csv("negative-words.txt",stringsAsFactors=F)
+sentidict <- dictionary(list(negative = negative_word,
+                             positive = positive_word))
+poswords <- unlist(positive_word[[1]])
+negwords <- unlist(negative_word[[1]])
+sentidict <- dictionary(list(negative = negwords,
+                             positive = poswords))
+senti <- dfm(dfcorpus, dictionary = sentidict)
+df$senti_score <- as.numeric(senti[,2]) - as.numeric(senti[,1])
+head(df$senti_score)
