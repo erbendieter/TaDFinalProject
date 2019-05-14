@@ -140,7 +140,7 @@ for (i in 1:nrow(newdf)){
 
 newdf$topic <- unlist(dict_top_num)
 
-positive_word <- read.csv("positivewords.txt",stringsAsFactors=F)
+positive_word <- read.csv("positive-words.txt",stringsAsFactors=F)
 negative_word <- read.csv("negative-words.txt",stringsAsFactors=F)
 sentidict <- dictionary(list(negative = negative_word,
                              positive = positive_word))
