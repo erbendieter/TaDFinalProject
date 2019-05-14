@@ -3,10 +3,18 @@ relief <- read.csv('a854756.csv', stringsAsFactors=F)
 relief <- subset(relief, relevance>4.5)
 # Changed relevance to 4.5 to get a smaller subset to choose from
 
-mydict_list <- list()
+topic_names <- read.csv('topic_names.csv', stringsAsFactors=F)
+unique_topics2 <- topic_names$topic
+
+mydict_list2 <- list()
+topic_names <- list()
+unique_topics = unique(relief$topic)
 # 13 topics
 for (i in 1:13){
-  mydict_list[[i]] <- relief$term[relief$topic==unique(relief$topic)[i]]
+  relief_topic <- relief[relief$topic == unique_topics[i],]
+  mydict_list[[i]] <- unlist(unique(relief_topic$term))
+  #print(unique_topics[i])
+  #mydict_list[[i]] <- relief$term[relief$topic==unique(relief$topic)[i]]
 }
 
 topics = unlist(unique(relief$topic))
@@ -49,13 +57,13 @@ for (i in 1:13){
   noquote_list[i] <- noquote(relief$topic[i])
 }
 
-mydict <- dictionary(list(Water = mydict_list[[1]], SearchAndRescue  = mydict_list[[2]],
-                          InfraAndUtilities = mydict_list[[3]], ExtreViolenceTerro = mydict_list[[4]],
-                          Medical = mydict_list[[5]], VioCiviUnre = mydict_list[[6]], 
-                          Evacuation = mydict_list[[7]], Energy = mydict_list[[8]],
-                          Shelter = mydict_list[[9]], Intervention = mydict_list[[10]],
-                          Food = mydict_list[[11]], Sanitation = mydict_list[[12]],
-                          ElecAndPolit = mydict_list[[13]]))
+mydict <- dictionary(list(Water = mydict_list[[10]], SearchAndRescue  = mydict_list[[7]],
+                          InfraAndUtilities = mydict_list[[13]], ExtreViolenceTerro = mydict_list[[4]],
+                          Medical = mydict_list[[9]], VioCiviUnre = mydict_list[[1]], 
+                          Evacuation = mydict_list[[8]], Energy = mydict_list[[6]],
+                          Shelter = mydict_list[[2]], Intervention = mydict_list[[12]],
+                          Food = mydict_list[[3]], Sanitation = mydict_list[[5]],
+                          ElecAndPolit = mydict_list[[11]]))
 
 
 
@@ -65,7 +73,7 @@ df <- read.csv(file="clean.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
 df$text <- as.character(df$text)
 dfcorpus <- corpus(df$text)
 topicdfm <- dfm(dfcorpus, dictionary = mydict)
-df$water <- as.numeric(topicdfm[,1])
+df$Water <- as.numeric(topicdfm[,1])
 df$SearchAndRescue <- as.numeric(topicdfm[,2])
 df$InfraAndUtilities <- as.numeric(topicdfm[,3])
 df$ExtreViolenceTerro <- as.numeric(topicdfm[,4])
@@ -83,7 +91,54 @@ df$ElecAndPolit <- as.numeric(topicdfm[,13])
 head(df)
 
 newdf <- df[c(6:18)]
-newdf$topic <- colnames(newdf)[apply(newdf,1,which.max)]
+
+matches <- rowSums(newdf != 0)
+pred_topic <- colnames(newdf)[apply(newdf,1,which.max)]
+
+for (i in 1:nrow(newdf)){
+  if (matches[i] == 0) {
+    pred_topic[i] = '-'
+  }
+}
+
+newdf$pred <- pred_topic
+dict_topcs <- unlist(unique(newdf$pred))
+
+dict_top_num <- list()
+
+for (i in 1:nrow(newdf)){
+  if (pred_topic[i] == dict_topcs[1]){
+    dict_top_num[i] = 1
+  } else if (pred_topic[i] == dict_topcs[2]){
+    dict_top_num[i] = 2
+  } else if (pred_topic[i] == dict_topcs[4]){
+    dict_top_num[i] = 10
+  } else if (pred_topic[i] == dict_topcs[5]){
+    dict_top_num[i] = 9
+  } else if (pred_topic[i] == dict_topcs[6]){
+    dict_top_num[i] = 13
+  } else if (pred_topic[i] == dict_topcs[7]){
+    dict_top_num[i] = 8
+  } else if (pred_topic[i] == dict_topcs[8]){
+    dict_top_num[i] = 5
+  } else if (pred_topic[i] == dict_topcs[9]){
+    dict_top_num[i] = 12
+  } else if (pred_topic[i] == dict_topcs[10]){
+    dict_top_num[i] = 7
+  } else if (pred_topic[i] == dict_topcs[11]){
+    dict_top_num[i] = 11
+  } else if (pred_topic[i] == dict_topcs[12]){
+    dict_top_num[i] = 6
+  } else if (pred_topic[i] == dict_topcs[13]){
+    dict_top_num[i] = 3
+  } else if (pred_topic[i] == dict_topcs[14]){
+    dict_top_num[i] = 4
+  } else {
+    dict_top_num[i] = NA
+  }
+}
+
+newdf$topic <- unlist(dict_top_num)
 
 positive_word <- read.csv("positivewords.txt",stringsAsFactors=F)
 negative_word <- read.csv("negative-words.txt",stringsAsFactors=F)
@@ -105,7 +160,16 @@ lda_model <- read.csv('lda_preds.csv', stringsAsFactors=F)
 lda_clean <- na.omit(cbind(lda_model$label,lda_model$pred_r, newdf$topic))
 
 library(MASS)
-tbl = table(lda_clean[,1], lda_clean[,3])
-tbl
+library(caret)
+
+# Chi Square LDA and Dictionary
+tbl = table(lda_clean[,2], lda_clean[,3])
 chisq.test(tbl)
+
+# Conf Matrix Dictionary
+tbl = table(lda_clean[,1], lda_clean[,3])
+confusionMatrix(tbl)
+
+# Conf Matrix LDA
+tbl = table(lda_clean[,1], lda_clean[,2])
 confusionMatrix(tbl)
