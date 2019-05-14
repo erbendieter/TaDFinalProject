@@ -96,3 +96,16 @@ sentidict <- dictionary(list(negative = negwords,
 senti <- dfm(dfcorpus, dictionary = sentidict)
 df$senti_score <- as.numeric(senti[,2]) - as.numeric(senti[,1])
 head(df$senti_score)
+
+write.csv(newdf, file = "dictionary_label.csv")
+write.csv(df, file = "senti_score.csv")
+
+lda_model <- read.csv('lda_preds.csv', stringsAsFactors=F)
+
+lda_clean <- na.omit(cbind(lda_model$label,lda_model$pred_r, newdf$topic))
+
+library(MASS)
+tbl = table(lda_clean[,1], lda_clean[,3])
+tbl
+chisq.test(tbl)
+confusionMatrix(tbl)
