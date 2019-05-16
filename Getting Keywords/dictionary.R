@@ -1,12 +1,13 @@
 rm(list = ls())
 relief <- read.csv('a854756.csv', stringsAsFactors=F)
 relief <- subset(relief, relevance>4.5)
+
 # Changed relevance to 4.5 to get a smaller subset to choose from
 
 topic_names <- read.csv('topic_names.csv', stringsAsFactors=F)
 unique_topics2 <- topic_names$topic
 
-mydict_list2 <- list()
+mydict_list <- list()
 topic_names <- list()
 unique_topics = unique(relief$topic)
 # 13 topics
